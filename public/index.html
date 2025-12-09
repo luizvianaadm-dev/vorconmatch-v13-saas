@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VorconMatch V13 - M.A.R.K. 11 V12</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        .gatekeeper-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+        .gatekeeper-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .gatekeeper-modal { background: white; padding: 40px; border-radius: 8px; text-align: center; max-width: 500px; }
+        .reconciliation-engine { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+        .status-badge { padding: 8px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-active { background: #4ade80; color: white; }
+        .status-expired { background: #ef4444; color: white; }
+        .status-trial { background: #f59e0b; color: white; }
+    </style>
+</head>
+<body>
+    <div id="gatekeeper" class="gatekeeper-overlay">
+        <div class="gatekeeper-modal">
+            <h2>Assinatura Expirada</h2>
+            <p>Sua assinatura trial expirou. Clique abaixo para renovar:</p>
+            <button onclick="window.location.href='https://asaas.com/planos'">Renovar Assinatura</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>VorconMatch V13</h1>
+            <p>Plataforma SaaS com Motor de Conciliação M.A.R.K. 11 V12</p>
+        </header>
+
+        <section class="reconciliation-engine">
+            <h2>Motor de Conciliação</h2>
+            <div id="reconciliation-status"></div>
+            <div id="reconciliation-results"></div>
+        </section>
+
+        <section>
+            <h3>Informações da Assinatura</h3>
+            <div id="subscription-info"></div>
+        </section>
+
+        <section>
+            <h3>Histórico de Transações</h3>
+            <div id="transaction-history"></div>
+        </section>
+    </div>
+
+    <script>
+        // ==================== M.A.R.K. 11 V12 RECONCILIATION ENGINE ====================
+        
+        // Normalize bank statement data structure
+        function normalizeBank(statement) {
+            return statement.map(tx => ({
+                amount: parseFloat(tx.valor || tx.amount || 0),
+                date: new Date(tx.data || tx.date),
+                description: tx.descricao || tx.description || '',
+                id: tx.id_transacao || tx.id,
+                metadata: tx.metadata || {}
+            }));
+        }
+        
+        // Subset sum algorithm for amount matching
+        function subsetSum(amounts, target, tolerance = 0.01) {
+            const result = [];
+            const used = new Set();
+            let sum = 0;
+            
+            for (let i = 0; i < amounts.length; i++) {
+                if (!used.has(i) && sum + amounts[i] <= target + tolerance) {
+                    result.push(i);
+                    used.add(i);
+                    sum += amounts[i];
+                    if (Math.abs(sum - target) < tolerance) break;
+                }
+            }
+            
+            return Math.abs(sum - target) < tolerance ? result : null;
+        }
+        
+        // Sequential matching across time windows
+        function runSequentialMatch(bankTx, asaasTx, timeWindow = 3) {
+            const matches = [];
+            const dayMs = 86400000;
+            
+            for (const bank of bankTx) {
+                for (const asaas of asaasTx) {
+                    const dayDiff = Math.abs(bank.date - asaas.date) / dayMs;
+                    if (dayDiff <= timeWindow && Math.abs(bank.amount - asaas.amount) < 0.01) {
+                        matches.push({ bank, asaas, confidence: 1 - (dayDiff / timeWindow) });
+                    }
+                }
+            }
+            
+            return matches.sort((a, b) => b.confidence - a.confidence);
+        }
+        
+        // Final reconciliation process
+        function finalProcess(matches, bankTx, asaasTx) {
+            const reconciled = new Set();
+            const unmatched = { bank: [...bankTx], asaas: [...asaasTx] };
+            
+            for (const match of matches) {
+                reconciled.add(`${match.bank.id}-${match.asaas.id}`);
+                unmatched.bank = unmatched.bank.filter(t => t.id !== match.bank.id);
+                unmatched.asaas = unmatched.asaas.filter(t => t.id !== match.asaas.id);
+            }
+            
+            return { reconciled: matches, unmatched, totalReconciled: matches.length };
+        }
+        
+        // ==================== AUTHENTICATION & GATEKEEPER ====================
+        
+        async function initializeApp() {
+            try {
+                // Check Supabase authentication
+                const response = await fetch('/api/auth/session');
+                const session = await response.json();
+                
+                if (!session?.user) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                // Check subscription status
+                const planResponse = await fetch(`/api/subscription/check?user=${session.user.id}`);
+                const planData = await planResponse.json();
+                
+                displaySubscriptionInfo(planData);
+                
+                // Check if trial is expired
+                if (planData.plan === 'trial' && new Date(planData.expiresAt) < new Date()) {
+                    showGatekeeper();
+                    return;
+                }
+                
+                // Load and run reconciliation
+                loadReconciliation(session.user.id, planData);
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('reconciliation-status').innerHTML = 
+                    '<p style="color: red;">Erro ao inicializar: ' + error.message + '</p>';
+            }
+        }
+        
+        function showGatekeeper() {
+            document.getElementById('gatekeeper').classList.add('active');
+        }
+        
+        function displaySubscriptionInfo(planData) {
+            const statusClass = planData.plan === 'trial' ? 'status-trial' : 
+                                new Date(planData.expiresAt) < new Date() ? 'status-expired' : 'status-active';
+            
+            document.getElementById('subscription-info').innerHTML = `
+                <p><strong>Plano:</strong> ${planData.plan.toUpperCase()}</p>
+                <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${planData.status}</span></p>
+                <p><strong>Vence em:</strong> ${new Date(planData.expiresAt).toLocaleDateString('pt-BR')}</p>
+                <p><strong>Limite de Transações:</strong> ${planData.transactionLimit || 'Ilimitado'}</p>
+            `;
+        }
+        
+        async function loadReconciliation(userId, planData) {
+            document.getElementById('reconciliation-status').innerHTML = '<p>Carregando dados...</p>';
+            
+            try {
+                // Fetch bank and Asaas transactions
+                const txResponse = await fetch(`/api/reconciliation/transactions?user=${userId}`);
+                const txData = await txResponse.json();
+                
+                // Normalize data
+                const bankTx = normalizeBank(txData.bank || []);
+                const asaasTx = normalizeBank(txData.asaas || []);
+                
+                // Run M.A.R.K. 11 V12 engine
+                const matches = runSequentialMatch(bankTx, asaasTx);
+                const result = finalProcess(matches, bankTx, asaasTx);
+                
+                displayReconciliationResults(result, planData);
+            } catch (error) {
+                document.getElementById('reconciliation-status').innerHTML = 
+                    '<p style="color: red;">Erro ao carregar conciliação: ' + error.message + '</p>';
+            }
+        }
+        
+        function displayReconciliationResults(result, planData) {
+            const percentage = result.reconciled.length > 0 ? 
+                (result.reconciled.length / (result.reconciled.length + result.unmatched.bank.length + result.unmatched.asaas.length)) * 100 : 0;
+            
+            document.getElementById('reconciliation-status').innerHTML = `
+                <p><strong>Status:</strong> Conciliação Completa</p>
+                <p><strong>Taxa de Sucesso:</strong> ${percentage.toFixed(2)}%</p>
+                <p><strong>Transações Conciliadas:</strong> ${result.totalReconciled}</p>
+                <p><strong>Não Encontradas:</strong> ${result.unmatched.bank.length + result.unmatched.asaas.length}</p>
+            `;
+            
+            document.getElementById('reconciliation-results').innerHTML = `
+                <h4>Detalhes da Conciliação</h4>
+                <pre>${JSON.stringify(result.reconciled.slice(0, 5), null, 2)}</pre>
+                <p><em>Mostrando primeiras 5 transações conciliadas</em></p>
+            `;
+        }
+        
+        // Initialize app on load
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
