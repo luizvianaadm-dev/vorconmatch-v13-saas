@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build || true",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY",
+    "ASAAS_API_KEY": "@ASAAS_API_KEY",
+    "ASAAS_WEBHOOK_SECRET": "@ASAAS_WEBHOOK_SECRET",
+    "ASAAS_ENV": "production"
+  },
+  "public": true,
+  "regions": ["gru1"],
+  "functions": {
+    "src/app/api/**": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
