@@ -18,10 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', require('./src/routes'));
 
 // SPA - Rota raiz serve index.html (para suportar SPA routing)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // Catch-all: qualquer rota não encontrada serve index.html (SPA fallback)
 app.get('*', (req, res) => {
   // Se for uma requisição de arquivo (tem extensão), retorna 404
