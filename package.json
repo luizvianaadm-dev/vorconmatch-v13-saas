@@ -16,4 +16,6 @@
   "devDependencies": {
     "@types/node": "^22.0.0"
   }
+,
+  "_deployment": "Fix Vercel config and deploy with new settings"
 }
