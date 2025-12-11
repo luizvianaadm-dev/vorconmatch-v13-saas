@@ -1,9 +1,10 @@
 {
   "main": "server.js",
+    "scripts": {"start": "node server.js"},
+  
   "name": "express",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
