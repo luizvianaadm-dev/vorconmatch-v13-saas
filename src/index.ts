@@ -7,30 +7,20 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
-// Home route - HTML
-app.get('/', (req, res) => {
-  res.type('html').send(`
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8"/>
-        <title>Express on Vercel</title>
-        <link rel="stylesheet" href="/style.css" />
-      </head>
-      <body>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/about">About</a>
-          <a href="/api-data">API Data</a>
-          <a href="/healthz">Health</a>
-        </nav>
-        <h1>Welcome to Express on Vercel 🚀</h1>
-        <p>This is a minimal example without a database or forms.</p>
-        <img src="/logo.png" alt="Logo" width="120" />
-      </body>
-    </html>
-  `)
-})
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// SPA - Serve index.html for all non-file routes (SPA fallback)
+app.get('*', (req, res) => {
+  // If the request is for a file (has extension), return 404
+  if (path.extname(req.path)) {
+    return res.status(404).send('Not found');
+  }
+  // Otherwise, serve the SPA HTML file
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+
 
 app.get('/about', function (req, res) {
   res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'))
