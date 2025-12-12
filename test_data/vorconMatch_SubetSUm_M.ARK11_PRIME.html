@@ -1,0 +1,1216 @@
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VorconMatch V10 – Final</title>
+    <!-- SheetJS para leitura de planilhas -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003366;
+            --secondary: #00AEEF;
+            --bg: #F1F5F9;
+            --surface: #FFFFFF;
+            --text: #0F172A;
+            --success: #10B981;
+            --danger: #EF4444;
+            --border: #CBD5E1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0F172A 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .left-brand h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .right-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .right-brand h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-align: right;
+        }
+        .right-brand span {
+            font-size: 0.7rem;
+            color: #CBD5E1;
+            display: block;
+        }
+        .top-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .top-actions button {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-final {
+            background: #f97316;
+            color: #ffffff;
+        }
+        .btn-final:hover {
+            background: #ea580c;
+        }
+        .btn-save {
+            background: #e5e7eb;
+            color: #111827;
+        }
+        .btn-save:hover {
+            background: #d1d5db;
+        }
+        .controls {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .upload-btn {
+            border: 2px dashed var(--border);
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .upload-btn:hover {
+            border-color: var(--secondary);
+            background: #F0F9FF;
+        }
+        .upload-btn.loaded {
+            border-color: var(--success);
+            background: #F0FDF4;
+            color: var(--success);
+        }
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            flex: 1;
+        }
+        .btn-run {
+            background: var(--secondary);
+            color: white;
+        }
+        .btn-run:hover {
+            background: #0090C0;
+            transform: translateY(-1px);
+        }
+        .btn-run:disabled {
+            background: #94A3B8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-clear {
+            background: white;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        .btn-clear:hover {
+            background: #FEF2F2;
+        }
+        .btn-export {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-export:hover {
+            background: #F1F5F9;
+        }
+        .btn-manual {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-manual:disabled {
+            background: #fca5a5;
+            cursor: not-allowed;
+        }
+        .btn-filter {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-filter.active {
+            background: #E0F2FE;
+            border-color: #3B82F6;
+            color: #1D4ED8;
+        }
+        .sel-summary {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            align-items: center;
+        }
+        .sel-summary span {
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 100px;
+            text-align: right;
+            display: inline-block;
+        }
+        .sum-ok {
+            background: #DCFCE7;
+            color: #166534;
+        }
+        .sum-warn {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .dash-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            background: #E2E8F0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .dash-section {
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .dash-left { justify-content: flex-start; border-right: 1px solid var(--border); }
+        .dash-right { justify-content: flex-end; border-left: 1px solid var(--border); }
+        .dash-center {
+            background: #F8FAFC;
+            padding: 0 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            color: var(--primary);
+            min-width: 100px;
+        }
+        .kpi-box { display: flex; flex-direction: column; }
+        .kpi-label { font-size: 0.7rem; text-transform: uppercase; color: #64748B; font-weight: 600; }
+        .kpi-val { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+        .kpi-val.ok { color: var(--success); }
+        .kpi-val.pend { color: var(--danger); }
+        .kpi-count { font-size: 0.75rem; color: #64748B; }
+        .perc-val { font-size: 1.4rem; color: var(--secondary); }
+        .perc-label { font-size: 0.7rem; color: #64748B; }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+        .panel { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); }
+        .panel-header {
+            background: #F8FAFC;
+            padding: 10px 20px;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+        .table-container { overflow-y: auto; flex: 1; background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { position: sticky; top: 0; background: #F1F5F9; padding: 10px 15px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); z-index: 10; }
+        td { padding: 8px 15px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+        tr:hover { background: #F8FAFC; }
+        .val-neg { color: #DC2626; font-weight: 600; text-align: right; }
+        .val-pos { color: #059669; font-weight: 600; text-align: right; }
+        .code-cell { font-family: 'Consolas', monospace; font-weight: 700; color: var(--primary); }
+        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; display: inline-block; min-width: 60px; text-align: center; }
+        .st-ok { background: #DCFCE7; color: #166534; }
+        .st-pend { background: #FEE2E2; color: #991B1B; }
+        .st-manual { background: #DCFCE7; color: #166534; }
+        .selected-row { background: #DBEAFE !important; }
+        .loader { position: fixed; inset: 0; background: rgba(255,255,255,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #E2E8F0; border-top-color: var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+    <div class="spinner"></div>
+    <h3 style="color:var(--primary)">Vorcon Engine V10</h3>
+    <p id="loaderStatus">Iniciando ciclo de conciliação...</p>
+</div>
+
+<header>
+    <div class="left-brand">
+        <h1>Vorcon<span style="color:var(--secondary)">Match</span></h1>
+    </div>
+    <div class="right-brand">
+        <h1>M.A.R.K. 11</h1>
+        <span>Matrix of Automated Results &amp; Knowledge</span>
+        <div class="top-actions">
+            <button class="btn-save" id="btnSave" onclick="saveProgress()">💾 Salvar</button>
+            <button class="btn-save" id="btnLoad" onclick="document.getElementById('fileState').click()">📂 Abrir</button>
+            <input type="file" id="fileState" hidden accept=".json" onchange="loadProgress(event)">
+        </div>
+    </div>
+</header>
+
+<div class="controls">
+    <div class="upload-btn" id="btnB" onclick="document.getElementById('fileB').click()">
+        📂 1. Banco
+        <div id="lblB" style="font-size:0.75rem; margin-top:5px; font-weight:400">Nenhum arquivo</div>
+        <input type="file" id="fileB" hidden accept=".csv,.xlsx">
+    </div>
+    <div class="upload-btn" id="btnF" onclick="document.getElementById('fileF').click()">
+        📂 2. Financeiro
+        <div id="lblF" style="font-size:0.75rem; margin-top:5px; font-weight:400">Nenhum arquivo</div>
+        <input type="file" id="fileF" hidden accept=".csv,.xlsx">
+    </div>
+    <button class="btn-run" id="btnProcess" onclick="startCascade()" disabled>⚡ Processar</button>
+    <button class="btn-final" id="btnFinal" onclick="finalProcess()" style="display:none">🧹 Varredura Final</button>
+    <button class="btn-export" onclick="exportData()">📥 Baixar</button>
+    <button class="btn-clear" onclick="clearAll()">🗑 Limpar</button>
+    <button class="btn-manual" id="btnManual" onclick="manualReconcile()" style="display:none">🤝 Manual</button>
+    <div class="sel-summary" id="selSummary" style="display:none;">
+        <div>Banco Selecionado: <span id="selSumB" class="sum-warn">R$ 0,00</span></div>
+        <div>Financeiro Selecionado: <span id="selSumF" class="sum-warn">R$ 0,00</span></div>
+    </div>
+    <button class="btn-filter" id="btnFilter" onclick="toggleFilter()" style="display:none">Mostrar Pendentes</button>
+</div>
+
+<div class="dash-container">
+    <div class="dash-section dash-left">
+        <div class="kpi-box">
+            <span class="kpi-label">Total Banco</span>
+            <span class="kpi-val" id="kpiTotalB">R$ 0,00</span>
+        </div>
+        <div class="kpi-box">
+            <span class="kpi-label">Conciliado</span>
+            <span class="kpi-val ok" id="kpiConcB">R$ 0,00</span>
+        </div>
+        <div class="kpi-box">
+            <span class="kpi-label">Pendente</span>
+            <span class="kpi-val pend" id="kpiPendB">R$ 0,00</span>
+            <span class="kpi-count" id="kpiPendCountB">(0)</span>
+        </div>
+        <div class="kpi-box" style="margin-left:10px; border-left:1px solid #ccc; padding-left:10px;">
+            <span class="kpi-label">Lotes</span>
+            <span class="kpi-val" id="kpiLotes">0</span>
+        </div>
+    </div>
+    <div class="dash-section dash-center">
+        <span class="perc-val" id="kpiPerc">0%</span>
+        <span class="perc-label">Progresso</span>
+    </div>
+    <div class="dash-section dash-right">
+        <div class="kpi-box" style="text-align:right">
+            <span class="kpi-label">Total Fin.</span>
+            <span class="kpi-val" id="kpiTotalF">R$ 0,00</span>
+        </div>
+        <div class="kpi-box" style="text-align:right">
+            <span class="kpi-label">Conciliado</span>
+            <span class="kpi-val ok" id="kpiConcF">R$ 0,00</span>
+        </div>
+        <div class="kpi-box" style="text-align:right">
+            <span class="kpi-label">Pendente</span>
+            <span class="kpi-val pend" id="kpiPendF">R$ 0,00</span>
+            <span class="kpi-count" id="kpiPendCountF">(0)</span>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="panel">
+        <div class="panel-header">Extrato Banco <span id="countB">0</span></div>
+        <div class="table-container">
+            <table id="tabB">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Data</th>
+                    <th style="text-align:right">Valor</th>
+                    <th>Empresa</th>
+                    <th>Banco/Caixa</th>
+                    <th>Conta</th>
+                    <th>Descrição</th>
+                    <th>Cód. Banco</th>
+                    <th style="text-align:right">Soma Fin.</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel" style="border-right:none;">
+        <div class="panel-header">Financeiro <span id="countF">0</span></div>
+        <div class="table-container">
+            <table id="tabF">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Data</th>
+                    <th style="text-align:right">Valor</th>
+                    <th>Empresa</th>
+                    <th>Banco/Caixa</th>
+                    <th>Conta</th>
+                    <th>Descrição</th>
+                    <th>Cód. Aplicado</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function normalizeBank(s) {
+    if (!s) return "GENERICO";
+    let str = s.toString().toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    str = str.replace(/\b(CARTAO|CARTOES|BCO|BANCO|S\.A|SA|LTDA|PAGAMENTO|RECEBIMENTO)\b/g, " ");
+    return str.replace(/[^A-Z0-9]/g, "").trim();
+}
+
+let rawData = { b: [], f: [] };
+let processedData = { b: [], f: [] };
+let mappingKeys = { f: null };
+let manualEnabled = false;
+let filterPending = false;
+let selSumBank = 0;
+let selSumFin = 0;
+const fmt = new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 2 });
+const MAX_ITERATIONS = 1000000;
+const MAP = {
+    dt: ['Data', 'DATA', 'Data movimento'],
+    val: ['Valor', 'VALOR', 'Valor (R$)'],
+    cod: ['Codigo Conciliação','Codigo Conciliacao','Código Conciliação','CODIGO'],
+    desc: ['Descrição','Descricao','Historico','Nome'],
+    acc: ['Conta','Conta Corrente','Conta Caixa'],
+    bank: ['Banco','Banco/Caixa','Caixa'],
+    company: ['Empresa','EMPRESA']
+};
+const clean = (s) => s ? s.toString().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim() : '';
+const toCents = (val) => Math.round(val * 100);
+
+function parseVal(v) {
+    if (typeof v === 'number') return v;
+    if (!v) return 0;
+    let s = v.toString().replace(/[R$\s]/g, '');
+    if (s.includes('.') && s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+    else if (s.includes(',')) s = s.replace(',', '.');
+    return parseFloat(s) || 0;
+}
+
+function parseDate(v) {
+    if (!v) return '';
+    if (typeof v === 'number') {
+        const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+        return d.toISOString().split('T')[0];
+    }
+    const s = String(v).trim();
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
+        const parts = s.split('/');
+        return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+    return s;
+}
+
+function detectHeaderRow(ws) {
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i].map(cell => clean(cell));
+        const hasDate = row.some(cell => MAP.dt.some(t => cell.includes(clean(t))));
+        const hasVal  = row.some(cell => MAP.val.some(t => cell.includes(clean(t))));
+        if (hasDate && hasVal) return i;
+    }
+    return 0;
+}
+
+function clearAll() {
+    rawData = { b: [], f: [] };
+    processedData = { b: [], f: [] };
+    mappingKeys = { f: null };
+    manualEnabled = false;
+    filterPending = false;
+    selSumBank = 0;
+    selSumFin = 0;
+    document.getElementById('fileB').value = '';
+    document.getElementById('fileF').value = '';
+    document.getElementById('lblB').innerText = 'Nenhum arquivo';
+    document.getElementById('lblF').innerText = 'Nenhum arquivo';
+    document.getElementById('btnB').classList.remove('loaded');
+    document.getElementById('btnF').classList.remove('loaded');
+    document.getElementById('btnProcess').disabled = true;
+    document.getElementById('btnManual').style.display = 'none';
+    document.getElementById('btnFilter').style.display = 'none';
+    document.getElementById('selSummary').style.display = 'none';
+    const btnFinal = document.getElementById('btnFinal');
+    const btnSave = document.getElementById('btnSave');
+    const btnLoad = document.getElementById('btnLoad');
+    if (btnFinal) btnFinal.style.display = 'none';
+    
+    
+    updateSummaryDisplay();
+    render('b'); render('f'); updateKPIs();
+}
+
+function updateSummaryDisplay() {
+    const sumBEl = document.getElementById('selSumB');
+    const sumFEl = document.getElementById('selSumF');
+    if (!sumBEl || !sumFEl) return;
+    sumBEl.innerText = 'R$ ' + fmt.format(selSumBank);
+    sumFEl.innerText = 'R$ ' + fmt.format(selSumFin);
+    const match = Math.abs(selSumBank - selSumFin) < 0.01;
+    sumBEl.className = match ? 'sum-ok' : 'sum-warn';
+    sumFEl.className = match ? 'sum-ok' : 'sum-warn';
+}
+
+function handleFile(type, e) {
+    const f = e.target.files[0];
+    if(!f) return;
+    document.getElementById(type === 'b' ? 'lblB' : 'lblF').innerText = f.name;
+    document.getElementById(type === 'b' ? 'btnB' : 'btnF').classList.add('loaded');
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const wb = XLSX.read(evt.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const headerRow = detectHeaderRow(ws);
+        const json = XLSX.utils.sheet_to_json(ws, { defval: '', range: headerRow });
+        if (json.length) {
+            const headers = Object.keys(json[0]);
+            const getCol = (targets) => headers.find(h => targets.some(t => clean(h).includes(clean(t))));
+            const kDt = getCol(MAP.dt);
+            const kVal = getCol(MAP.val);
+            const kCod = getCol(MAP.cod);
+            const kDesc = getCol(MAP.desc);
+            const kAcc = getCol(MAP.acc);
+            const kBank = getCol(MAP.bank);
+            const kComp = getCol(MAP.company);
+            if (type === 'f') mappingKeys.f = kCod;
+            rawData[type] = json;
+            processedData[type] = json.map((row, idx) => {
+                const codInit = (type === 'b') ? (row[kCod] ? String(row[kCod]).trim() : '') : '';
+                return {
+                    _idx: idx,
+                    dt: parseDate(row[kDt]),
+                    val: parseVal(row[kVal]),
+                    cod: codInit,
+                    bank: row[kBank] || '',
+                    acc: row[kAcc] || '',
+                    company: row[kComp] || '',
+                    desc: row[kDesc] || '',
+                    somaMatch: 0,
+                    status: '',
+                    newCod: undefined,
+                    sel: false
+                };
+            });
+            if (type === 'b') {
+                const prefix = 'BC';
+                processedData.b.forEach((row, i) => {
+                    if (!row.cod || row.cod.trim().length === 0) {
+                        const newCode = prefix + String(i + 1).padStart(4, '0');
+                        row.cod = newCode;
+                        const rawRow = rawData.b[row._idx];
+                        let keyCod = kCod;
+                        if (!keyCod) keyCod = 'Codigo Conciliacao';
+                        rawRow[keyCod] = newCode;
+                    }
+                });
+            }
+        }
+        
+        if (processedData.b.length && processedData.f.length) document.getElementById('btnProcess').disabled = false;
+        render(type);
+        updateKPIs();
+    };
+    reader.readAsArrayBuffer(f);
+}
+
+function toggleFilter() {
+    filterPending = !filterPending;
+    const btn = document.getElementById('btnFilter');
+    const btnFinal = document.getElementById('btnFinal');
+
+    if (filterPending) {
+        btn.classList.add('active');
+        btn.innerText = 'Mostrar Todos';
+
+        const pendB = processedData.b.filter(r => r.status !== 'CONCILIADO' && r.status !== 'MANUAL').length;
+        const pendF = processedData.f.filter(r => !r.newCod && r.status !== 'MANUAL').length;
+        if ((pendB > 0 || pendF > 0) && btnFinal) {
+            btnFinal.style.display = 'inline-block';
+        }
+    } else {
+        btn.classList.remove('active');
+        btn.innerText = 'Mostrar Pendentes';
+        if (btnFinal) btnFinal.style.display = 'none';
+    }
+    render('b'); 
+    render('f');
+}
+
+function updateManualSummary() {
+    selSumBank = processedData.b.filter(r => r.sel).reduce((a,r) => a + r.val, 0);
+    selSumFin  = processedData.f.filter(r => r.sel).reduce((a,r) => a + r.val, 0);
+    updateSummaryDisplay();
+}
+
+async function startCascade() {
+    document.getElementById('loader').style.display = 'flex';
+    const loaderTxt = document.getElementById('loaderStatus');
+    let pass = 1;
+    let totalMatches = 0;
+    let newMatches = 0;
+    do {
+        loaderTxt.innerText = `Rodando Ciclo ${pass}: Otimizando Matches...`;
+        await new Promise(r => setTimeout(r, 100));
+        newMatches = runPass(pass);
+        totalMatches += newMatches;
+        render('b'); render('f'); updateKPIs();
+        pass++;
+    } while (newMatches > 0 && pass <= 5);
+    runSequentialMatch();
+    render('b'); render('f'); updateKPIs();
+    document.getElementById('loader').style.display = 'none';
+    alert(`Processamento Finalizado!\n\nLotes Fechados: ${totalMatches}`);
+    const pendB = processedData.b.filter(r => r.status !== 'CONCILIADO' && r.status !== 'MANUAL').length;
+    const pendF = processedData.f.filter(r => !r.newCod && r.status !== 'MANUAL').length;
+    const btnManual = document.getElementById('btnManual');
+    const btnFilter = document.getElementById('btnFilter');
+    const selSummary = document.getElementById('selSummary');
+
+    if (pendB > 0 || pendF > 0) {
+        manualEnabled = true;
+        if (btnManual) btnManual.style.display = 'block';
+        if (selSummary) selSummary.style.display = 'flex';
+        if (btnFilter) btnFilter.style.display = 'inline-block';
+    } else {
+        manualEnabled = false;
+        if (btnManual) btnManual.style.display = 'none';
+        if (selSummary) selSummary.style.display = 'none';
+        if (btnFilter) btnFilter.style.display = 'none';
+        const btnFinal = document.getElementById('btnFinal');
+        if (btnFinal) btnFinal.style.display = 'none';
+    }
+
+
+
+    selSumBank = 0;
+    selSumFin = 0;
+    updateSummaryDisplay();
+}
+
+function runPass(pass) {
+    const banco = processedData.b;
+    const fin = processedData.f;
+    let matchesInThisPass = 0;
+
+    if (pass === 1) {
+        const finIdx = {};
+        fin.forEach(f => {
+            if (!f.newCod && f.status !== 'MANUAL') {
+                const key = f.dt + '_' + toCents(f.val) + '_' + normalizeBank(f.bank || '');
+                if (!finIdx[key]) finIdx[key] = [];
+                finIdx[key].push(f);
+            }
+        });
+        banco.forEach(b => {
+            if (b.cod && b.cod.length > 1 && b.status !== 'CONCILIADO') {
+                const key = b.dt + '_' + toCents(b.val) + '_' + normalizeBank(b.bank || '');
+                const candidatos = finIdx[key] || [];
+                if (candidatos.length === 1) {
+                    const fItem = candidatos[0];
+                    b.status = 'CONCILIADO';
+                    b.somaMatch = fItem.val;
+                    fItem.newCod = b.cod;
+                    const rawRow = rawData.f[fItem._idx];
+                    const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                    rawRow[targetCol] = b.cod;
+                    matchesInThisPass++;
+                }
+            }
+        });
+        return matchesInThisPass;
+    }
+
+    const finMap = {};
+    fin.forEach(f => {
+        if (!finMap[f.dt]) finMap[f.dt] = [];
+        if (!f.newCod && f.status !== 'MANUAL') finMap[f.dt].push(f);
+    });
+
+    banco.forEach(b => {
+        if (b.cod && b.cod.length > 1 && b.status !== 'CONCILIADO') {
+            const candidatos = finMap[b.dt] || [];
+            const disponiveis = candidatos.filter(c => !c.usedTemp && normalizeBank(c.bank || '') === normalizeBank(b.bank || ''));
+            if (disponiveis.length > 0) {
+                disponiveis.sort((a, bb) => Math.abs(bb.val) - Math.abs(a.val));
+                const targetCents = toCents(b.val);
+                const numbers = disponiveis.map(d => toCents(d.val));
+                const matchIndices = findSubsetSum(numbers, targetCents);
+
+                if (matchIndices) {
+                    b.status = 'CONCILIADO';
+                    let somaReal = 0;
+                    matchIndices.forEach(idxInArray => {
+                        const itemFin = disponiveis[idxInArray];
+                        itemFin.newCod = b.cod;
+                        itemFin.usedTemp = true;
+                        somaReal += itemFin.val;
+                        const rawRow = rawData.f[itemFin._idx];
+                        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                        rawRow[targetCol] = b.cod;
+                    });
+                    b.somaMatch = somaReal;
+                    matchesInThisPass++;
+                }
+            }
+        }
+    });
+
+    fin.forEach(f => delete f.usedTemp);
+    return matchesInThisPass;
+}
+
+function findSubsetSum(numbers, target) {
+    const resultIndices = [];
+    let iterations = 0;
+    let found = false;
+
+    function backtrack(startIndex, currentSum, currentIndices) {
+        iterations++;
+        if (found || iterations > MAX_ITERATIONS) return;
+
+        if (Math.abs(currentSum - target) <= 1) {
+            found = true;
+            currentIndices.forEach(i => resultIndices.push(i));
+            return;
+        }
+        if (startIndex >= numbers.length) return;
+
+        for (let i = startIndex; i < numbers.length; i++) {
+            backtrack(i + 1, currentSum + numbers[i], [...currentIndices, i]);
+            if (found) return;
+        }
+    }
+
+    const exactIdx = numbers.findIndex(n => Math.abs(n - target) <= 1);
+    if (exactIdx !== -1) return [exactIdx];
+
+    const total = numbers.reduce((a,b) => a + b, 0);
+    if (Math.abs(total - target) <= 1) return numbers.map((_, i) => i);
+
+    backtrack(0, 0, []);
+    return found ? resultIndices : null;
+}
+
+function runSequentialMatch() {
+    const finByDateBank = {};
+    processedData.f.forEach(f => {
+        if (!f.newCod && f.status !== 'MANUAL') {
+            const key = f.dt + '_' + normalizeBank(f.bank || '');
+            if (!finByDateBank[key]) finByDateBank[key] = [];
+            finByDateBank[key].push(f);
+        }
+    });
+    Object.values(finByDateBank).forEach(arr => arr.sort((a,b) => a._idx - b._idx));
+
+    const keys = [...new Set(processedData.b.map(b => b.dt + '_' + normalizeBank(b.bank || '')))].filter(Boolean);
+
+    keys.forEach(key => {
+        const pendBanks = processedData.b.filter(b => b.dt + '_' + normalizeBank(b.bank || '') === key && b.status !== 'CONCILIADO');
+        if (pendBanks.length === 2) {
+            const fRows = finByDateBank[key] || [];
+            pendBanks.sort((a,b) => Math.abs(b.val) - Math.abs(a.val));
+            const t1 = pendBanks[0].val;
+            const t2 = pendBanks[1].val;
+            let sum1 = 0;
+
+            for (let i = 0; i < fRows.length - 1; i++) {
+                sum1 += fRows[i].val;
+                const sum2 = fRows.slice(i+1).reduce((acc,r) => acc + r.val, 0);
+                if (Math.abs(sum1 - t1) < 0.5 && Math.abs(sum2 - t2) < 0.5) {
+                    for (let j = 0; j <= i; j++) {
+                        const f = fRows[j];
+                        f.newCod = pendBanks[0].cod;
+                        f.status = 'MANUAL';
+                        const rawRow = rawData.f[f._idx];
+                        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                        rawRow[targetCol] = pendBanks[0].cod;
+                    }
+                    for (let j = i+1; j < fRows.length; j++) {
+                        const f = fRows[j];
+                        f.newCod = pendBanks[1].cod;
+                        f.status = 'MANUAL';
+                        const rawRow = rawData.f[f._idx];
+                        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                        rawRow[targetCol] = pendBanks[1].cod;
+                    }
+                    pendBanks[0].status = 'MANUAL';
+                    pendBanks[1].status = 'MANUAL';
+                    pendBanks[0].somaMatch = sum1;
+                    pendBanks[1].somaMatch = sum2;
+                    return;
+                }
+                if (Math.abs(sum1 - t2) < 0.5 && Math.abs(sum2 - t1) < 0.5) {
+                    for (let j = 0; j <= i; j++) {
+                        const f = fRows[j];
+                        f.newCod = pendBanks[1].cod;
+                        f.status = 'MANUAL';
+                        const rawRow = rawData.f[f._idx];
+                        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                        rawRow[targetCol] = pendBanks[1].cod;
+                    }
+                    for (let j = i+1; j < fRows.length; j++) {
+                        const f = fRows[j];
+                        f.newCod = pendBanks[0].cod;
+                        f.status = 'MANUAL';
+                        const rawRow = rawData.f[f._idx];
+                        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                        rawRow[targetCol] = pendBanks[0].cod;
+                    }
+                    pendBanks[0].status = 'MANUAL';
+                    pendBanks[1].status = 'MANUAL';
+                    pendBanks[0].somaMatch = sum2;
+                    pendBanks[1].somaMatch = sum1;
+                    return;
+                }
+            }
+        }
+    });
+}
+
+function render(type) {
+    const data = processedData[type];
+    const tbody = document.getElementById(type === 'b' ? 'tabB' : 'tabF').querySelector('tbody');
+    document.getElementById(type === 'b' ? 'countB' : 'countF').innerText = data.length + ' registros';
+
+    let list = data;
+    if (filterPending) {
+        list = data.filter(r => {
+            return type === 'b'
+                ? (r.status !== 'CONCILIADO' && r.status !== 'MANUAL')
+                : (!r.newCod && r.status !== 'MANUAL');
+        });
+    }
+
+    tbody.innerHTML = list.map(r => {
+        const valClass = r.val < 0 ? 'val-neg' : 'val-pos';
+        const dtStr = r.dt ? r.dt.split('-').reverse().join('/') : '';
+        const rowClass = r.sel ? 'selected-row' : '';
+
+        let statusBadge;
+        if (r.status === 'CONCILIADO') statusBadge = '<span class="status-badge st-ok">CONC</span>';
+        else if (r.status === 'MANUAL' || r.newCod) statusBadge = '<span class="status-badge st-manual">MAN</span>';
+        else statusBadge = '<span class="status-badge st-pend">PEND</span>';
+
+        const showChk = manualEnabled && (
+            (type === 'b' && r.status !== 'CONCILIADO' && r.status !== 'MANUAL') ||
+            (type === 'f' && !r.newCod && r.status !== 'MANUAL')
+        );
+
+        const chk = showChk ? `<input type="checkbox" data-idx="${r._idx}" class="${type === 'b' ? 'chk-b':'chk-f'}" ${r.sel? 'checked':''}>` : '';
+
+        if (type === 'b') {
+            const bg = (r.status === 'CONCILIADO' || r.status === 'MANUAL') ? '#DCFCE7' : '';
+            return `<tr class="${rowClass}" style="background:${bg}">\n` +
+                `<td>${chk}</td>` +
+                `<td>${dtStr}</td>` +
+                `<td class="${valClass}">${fmt.format(r.val)}</td>` +
+                `<td>${r.company || '-'}</td>` +
+                `<td>${r.bank || '-'}</td>` +
+                `<td>${r.acc || '-'}</td>` +
+                `<td>${r.desc || '-'}</td>` +
+                `<td class="code-cell">${r.cod}</td>` +
+                `<td style="text-align:right">${(r.status === 'CONCILIADO' || r.status === 'MANUAL') ? fmt.format(r.somaMatch) : '-'}</td>` +
+                `<td style="text-align:center">${statusBadge}</td>` +
+                `</tr>`;
+        } else {
+            const bg = (r.newCod || r.status === 'MANUAL') ? '#DCFCE7' : '';
+            return `<tr class="${rowClass}" style="background:${bg}">\n` +
+                `<td>${chk}</td>` +
+                `<td>${dtStr}</td>` +
+                `<td class="${valClass}">${fmt.format(r.val)}</td>` +
+                `<td>${r.company || '-'}</td>` +
+                `<td>${r.bank || '-'}</td>` +
+                `<td>${r.acc || '-'}</td>` +
+                `<td>${(r.desc || '').substring(0,40)}</td>` +
+                `<td class="code-cell">${r.newCod || ''}</td>` +
+                `<td style="text-align:center">${statusBadge}</td>` +
+                `</tr>`;
+        }
+    }).join('');
+
+    const chks = tbody.querySelectorAll('input[type="checkbox"]');
+    chks.forEach(chk => {
+        chk.addEventListener('change', (ev) => {
+            const idx = parseInt(ev.target.getAttribute('data-idx'));
+            const checked = ev.target.checked;
+            if (type === 'b') {
+                const row = processedData.b.find(r => r._idx === idx);
+                if (row) row.sel = checked;
+            } else {
+                const row = processedData.f.find(r => r._idx === idx);
+                if (row) row.sel = checked;
+            }
+            updateManualSummary();
+            render(type);
+        });
+    });
+}
+
+function updateKPIs() {
+    const totB = processedData.b.reduce((a,r) => a + Math.abs(r.val), 0);
+    const concB = processedData.b.filter(r => r.status === 'CONCILIADO' || r.status === 'MANUAL').reduce((a,r) => a + Math.abs(r.val), 0);
+    const pendBVal = totB - concB;
+    const pendBCount = processedData.b.filter(r => r.status !== 'CONCILIADO' && r.status !== 'MANUAL').length;
+    const lotes = processedData.b.filter(r => r.status === 'CONCILIADO').length;
+
+    document.getElementById('kpiTotalB').innerText = 'R$ ' + fmt.format(totB);
+    document.getElementById('kpiConcB').innerText = 'R$ ' + fmt.format(concB);
+    document.getElementById('kpiPendB').innerText = 'R$ ' + fmt.format(pendBVal);
+    document.getElementById('kpiPendCountB').innerText = '(' + pendBCount + ')';
+    document.getElementById('kpiLotes').innerText = lotes;
+
+    const totF = processedData.f.reduce((a,r) => a + Math.abs(r.val), 0);
+    const concF = processedData.f.filter(r => r.newCod || r.status === 'MANUAL').reduce((a,r) => a + Math.abs(r.val), 0);
+    const pendFVal = totF - concF;
+    const pendFCount = processedData.f.filter(r => !r.newCod && r.status !== 'MANUAL').length;
+
+    document.getElementById('kpiTotalF').innerText = 'R$ ' + fmt.format(totF);
+    document.getElementById('kpiConcF').innerText = 'R$ ' + fmt.format(concF);
+    document.getElementById('kpiPendF').innerText = 'R$ ' + fmt.format(pendFVal);
+    document.getElementById('kpiPendCountF').innerText = '(' + pendFCount + ')';
+
+    const perc = totB > 0 ? (concB / totB) * 100 : 0;
+    document.getElementById('kpiPerc').innerText = perc.toFixed(1) + '%';
+}
+
+function manualReconcile() {
+    const selectedBanks = processedData.b.filter(r => r.sel);
+    const selectedFin  = processedData.f.filter(r => r.sel);
+
+    if (selectedBanks.length !== 1 || selectedFin.length === 0) {
+        alert('Selecione exatamente um lançamento bancário e pelo menos um lançamento financeiro para conciliar manualmente.');
+        return;
+    }
+
+    const bankRow = selectedBanks[0];
+    selectedFin.forEach(f => {
+        f.newCod = bankRow.cod;
+        f.status = 'MANUAL';
+        const rawRow = rawData.f[f._idx];
+        const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+        rawRow[targetCol] = bankRow.cod;
+        f.sel = false;
+    });
+
+    bankRow.status = 'MANUAL';
+    bankRow.somaMatch = selectedFin.reduce((a,r) => a + r.val, 0);
+    bankRow.sel = false;
+
+    const pendB = processedData.b.filter(r => r.status !== 'CONCILIADO' && r.status !== 'MANUAL').length;
+    const pendF = processedData.f.filter(r => !r.newCod && r.status !== 'MANUAL').length;
+    const btnManual = document.getElementById('btnManual');
+    const btnFilter = document.getElementById('btnFilter');
+    const selSummary = document.getElementById('selSummary');
+
+    if (pendB > 0 || pendF > 0) {
+        manualEnabled = true;
+        if (btnManual) btnManual.style.display = 'block';
+        if (btnFilter) btnFilter.style.display = 'inline-block';
+        if (selSummary) selSummary.style.display = 'flex';
+    } else {
+        manualEnabled = false;
+        if (btnManual) btnManual.style.display = 'none';
+        if (btnFilter) btnFilter.style.display = 'none';
+        if (selSummary) selSummary.style.display = 'none';
+        const btnFinal = document.getElementById('btnFinal');
+        if (btnFinal) btnFinal.style.display = 'none';
+    }
+
+    selSumBank = 0;
+    selSumFin = 0;
+    updateSummaryDisplay();
+    render('b');
+    render('f');
+    updateKPIs();
+    alert('Conciliação manual aplicada.');
+}
+
+function finalProcess() {
+    if (!filterPending) {
+        alert("Ative primeiro 'Mostrar Pendentes' para rodar a Varredura Final apenas nos pendentes.");
+        return;
+    }
+
+    if (!confirm(
+        "A Varredura Final atua apenas sobre lançamentos pendentes, " +
+        "tentando conciliar por DATA e SOMA dos valores (SUBSET SUM), ignorando o banco.\n\n" +
+        "Isso tentará fechar combinações complexas que restaram.\n" +
+        "Deseja continuar?"
+    )) return;
+
+    // somente bancos pendentes
+    // Ordenamos os bancos pendentes do maior valor absoluto para o menor.
+    // Isso ajuda a resolver primeiro os 'grandes' que podem consumir muitos itens,
+    // ou simplesmente organiza o processamento.
+    let pendBanks = processedData.b.filter(
+        b => b.status !== 'CONCILIADO' && b.status !== 'MANUAL'
+    );
+    
+    if (!pendBanks.length) {
+        alert("Não há lançamentos bancários pendentes para varrer.");
+        return;
+    }
+    
+    // Ordena bancos por valor decrescente (opcional, mas pode ajudar em greedy approaches, aqui é subset sum exato)
+    pendBanks.sort((a,b) => Math.abs(b.val) - Math.abs(a.val));
+
+    // financeiros pendentes agrupados por data
+    // Importante: vamos atualizar essa lista dinamicamente ou marcar 'usedFinal'
+    const finByDate = {};
+    processedData.f.forEach(f => {
+        if (!f.newCod && f.status !== 'MANUAL') {
+            if (!finByDate[f.dt]) finByDate[f.dt] = [];
+            finByDate[f.dt].push(f);
+        }
+    });
+
+    let matches = 0;
+
+    // Para cada lançamento bancário pendente
+    pendBanks.forEach(b => {
+        // Pega candidatos financeiros da MESMA DATA que ainda não foram usados nesta rodada final
+        const finCandidates = (finByDate[b.dt] || []).filter(f => !f.usedFinal);
+        
+        // Se não tem candidatos ou se a soma de todos os candidatos for menor que o valor buscado (em módulo),
+        // nem adianta rodar subset sum (otimização básica).
+        // Mas como podem ser valores positivos e negativos misturados, a soma simples pode enganar.
+        // Vamos confiar no subsetSum.
+        
+        if (!finCandidates.length) return;
+
+        // Prepara vetores para o subset sum
+        // É crucial manter a referência correta entre o indice do vetor 'numbers' e o objeto 'finCandidates'
+        
+        // Dica: subset sum pode ser pesado se houver MUITOS itens (ex: > 20-30 na mesma data).
+        // O algoritmo atual tem um limite de iterações (MAX_ITERATIONS).
+        
+        const targetCents = toCents(b.val);
+        
+        // Mapeia para centavos
+        const numbers = finCandidates.map(f => toCents(f.val));
+
+        // Tenta achar a combinação
+        const subsetIdx = findSubsetSum(numbers, targetCents);
+
+        if (subsetIdx && subsetIdx.length > 0) {
+            // Achou combinação!
+            let somaReal = 0;
+            
+            subsetIdx.forEach(idx => {
+                const f = finCandidates[idx];
+                f.newCod = b.cod;
+                f.status = 'MANUAL'; // Marcamos como Manual (ou Conciliado, se preferir) para diferenciar
+                f.usedFinal = true;  // Marca para não ser usado pelo próximo banco no loop
+                somaReal += f.val;
+
+                // Atualiza dado original para exportação
+                const rawRow = rawData.f[f._idx];
+                const targetCol = mappingKeys.f || 'Codigo Conciliacao';
+                rawRow[targetCol] = b.cod;
+            });
+
+            b.status = 'MANUAL';
+            b.somaMatch = somaReal;
+            matches++;
+        }
+    });
+
+    // Limpa a flag temporária 'usedFinal' de todos (já que agora eles estão com status MANUAL ou newCod preenchido, não serão pegos no próximo filtro)
+    processedData.f.forEach(f => delete f.usedFinal);
+
+    if (matches > 0) {
+        alert(`Varredura Final (Subset Sum) concluiu ${matches} conciliações em lançamentos pendentes.`);
+    } else {
+        alert("Varredura Final: Nenhuma combinação encontrada nos pendentes (para a mesma data).");
+    }
+
+    render('b');
+    render('f');
+    updateKPIs();
+
+    // Verifica se ainda sobrou algo para esconder/mostrar botões
+    const pendRestB = processedData.b.filter(r => r.status !== 'CONCILIADO' && r.status !== 'MANUAL').length;
+    const pendRestF = processedData.f.filter(r => !r.newCod && r.status !== 'MANUAL').length;
+    const btnFinal = document.getElementById('btnFinal');
+
+    if (pendRestB === 0 && pendRestF === 0 && btnFinal) {
+        manualEnabled = false;
+        btnFinal.style.display = 'none';
+    }
+}
+
+function saveProgress() {
+    if(processedData.b.length === 0 && processedData.f.length === 0) {
+        alert("Não há dados processados para salvar.");
+        return;
+    }
+
+    const state = {
+        rawData: rawData,
+        processedData: processedData,
+        mappingKeys: mappingKeys,
+        manualEnabled: typeof manualEnabled !== 'undefined' ? manualEnabled : false,
+        filterPending: typeof filterPending !== 'undefined' ? filterPending : false
+    };
+
+    const blob = new Blob([JSON.stringify(state)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Vorcon_Conciliacao_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function loadProgress(event) {
+    const f = event.target.files[0];
+    if(!f) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const state = JSON.parse(e.target.result);
+
+            rawData = state.rawData || { b: [], f: [] };
+            processedData = state.processedData || { b: [], f: [] };
+            mappingKeys = state.mappingKeys || { f: null };
+
+            if (state.manualEnabled !== undefined) manualEnabled = state.manualEnabled;
+            if (state.filterPending !== undefined) filterPending = state.filterPending;
+
+            document.getElementById('btnProcess').disabled = false;
+
+            if (manualEnabled && document.getElementById('btnManual')) {
+                document.getElementById('btnManual').style.display = 'block';
+            }
+
+            if (processedData.b.length || processedData.f.length) {
+                const btnSave = document.getElementById('btnSave');
+                const btnLoad = document.getElementById('btnLoad');
+                if (btnSave) btnSave.style.display = 'inline-block';
+                if (btnLoad) btnLoad.style.display = 'inline-block';
+            }
+
+            render('b'); 
+            render('f'); 
+            updateKPIs();
+
+            const btnFilter = document.getElementById('btnFilter');
+            if (processedData.b.length || processedData.f.length) {
+                if (btnFilter) btnFilter.style.display = 'inline-block';
+            }
+
+            alert("Progresso carregado com sucesso!");
+        } catch(err) {
+            alert("Erro ao ler arquivo de progresso. O arquivo pode estar corrompido.");
+            console.error(err);
+        }
+    };
+    reader.readAsText(f);
+    event.target.value = '';
+}
+
+function exportData() {
+    if (!rawData.f.length && !rawData.b.length) {
+        alert("Não há dados carregados para exportar.");
+        return;
+    }
+
+    const dataFin = rawData.f.map(row => {
+        const newRow = { ...row };
+        const headers = Object.keys(row);
+        const keyDt = headers.find(h => MAP.dt.some(t => clean(h).includes(clean(t))));
+        if (keyDt && newRow[keyDt]) {
+            const iso = parseDate(newRow[keyDt]);
+            if (iso) newRow[keyDt] = iso.split('-').reverse().join('/');
+        }
+        return newRow;
+    });
+
+    const dataBancoConc = processedData.b.map(r => ({
+        Data: r.dt ? r.dt.split('-').reverse().join('/') : '',
+        Valor: r.val,
+        Empresa: r.company || '',
+        BancoCaixa: r.bank || '',
+        Conta: r.acc || '',
+        Descricao: r.desc || '',
+        CodigoBanco: r.cod || '',
+        SomaFinanceiro: r.somaMatch || 0,
+        Status: r.status || ''
+    }));
+
+    const wb = XLSX.utils.book_new();
+
+    if (dataFin.length) {
+        const wsFin = XLSX.utils.json_to_sheet(dataFin);
+        XLSX.utils.book_append_sheet(wb, wsFin, 'Financeiro Conciliado');
+    }
+    if (dataBancoConc.length) {
+        const wsBco = XLSX.utils.json_to_sheet(dataBancoConc);
+        XLSX.utils.book_append_sheet(wb, wsBco, 'Banco Conciliado');
+    }
+
+    XLSX.writeFile(wb, 'Conciliacao_Final_V10.xlsx');
+}
+
+document.getElementById('fileB').addEventListener('change', e => handleFile('b', e));
+document.getElementById('fileF').addEventListener('change', e => handleFile('f', e));
+</script>
+</body>
+</html>
+

@@ -473,47 +473,11 @@
             100% {
                 transform: rotate(360deg);
             }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Auth Overlay -->
-    <div id="authOverlay"
-        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;">
-        <div
-            style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5); max-width:400px; width:90%;">
-            <h2 style="margin-bottom:20px; color:#1e293b;">VorconMatch Acesso</h2>
-            <p style="margin-bottom:20px; color:#64748b;">Informe seu e-mail corporativo para continuar.</p>
-            <input type="email" id="authEmail" placeholder="seu.email@vorcon.com.br"
-                style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:15px; font-size:16px;">
-            <button onclick="checkAuth()"
-                style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px;">Entrar</button>
-            <p id="authError" style="color:#ef4444; margin-top:10px; display:none;">Acesso permitido apenas para e-mails
-                @vorcon.com.br</p>
-        </div>
-    </div>
-
-    <script>
-        function checkAuth() {
-            const email = document.getElementById('authEmail').value.trim().toLowerCase();
-            const validDomains = ['@vorcon.com.br']; // Whitelist
-
-            if (validDomains.some(d => email.endsWith(d))) {
-                document.getElementById('authOverlay').style.display = 'none';
-                localStorage.setItem('vorcon_user', email); // Persist session simple
-            } else {
-                document.getElementById('authError').style.display = 'block';
-            }
-        }
-
-        // Auto-login persistence
-        window.addEventListener('load', () => {
-            const user = localStorage.getItem('vorcon_user');
-            if (user && user.endsWith('@vorcon.com.br')) {
-                document.getElementById('authOverlay').style.display = 'none';
-            }
-        });
-    </script>
 
     <div class="loader" id="loader">
         <div class="spinner"></div>
