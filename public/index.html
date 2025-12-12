@@ -482,34 +482,114 @@
         style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;">
         <div
             style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5); max-width:400px; width:90%;">
-            <h2 style="margin-bottom:20px; color:#1e293b;">VorconMatch Acesso</h2>
-            <p style="margin-bottom:20px; color:#64748b;">Informe seu e-mail corporativo para continuar.</p>
-            <input type="email" id="authEmail" placeholder="seu.email@vorcon.com.br"
-                style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:15px; font-size:16px;">
-            <button onclick="checkAuth()"
-                style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px;">Entrar</button>
-            <p id="authError" style="color:#ef4444; margin-top:10px; display:none;">Acesso permitido apenas para e-mails
-                @vorcon.com.br</p>
+            <h2 style="margin-bottom:10px; color:#1e293b;">VorconMatch <span
+                    style="font-size:0.6em; background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">BETA</span>
+            </h2>
+            <p style="margin-bottom:20px; color:#64748b;">Acesso Corporativo ou Beta Tester</p>
+
+            <input type="email" id="authEmail" placeholder="seu.email@empresa.com"
+                style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:10px; font-size:16px;">
+
+            <!-- Area de Cupom (Oculta inicialmente) -->
+            <div id="paymentArea"
+                style="display:none; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                <p style="font-size:14px; color:#475569; margin-bottom:10px;">Licença Beta: <b
+                        style="text-decoration:line-through; color:#94a3b8;">R$ 997,00</b> <span id="priceDisplay"
+                        style="color:#2563eb; font-weight:bold;">R$ 97,00</span></p>
+                <div style="display:flex; gap:5px; margin-bottom:15px;">
+                    <input type="text" id="couponCode" placeholder="CUPOM PROMOCIONAL"
+                        style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; text-transform:uppercase;">
+                    <button onclick="applyCoupon()"
+                        style="padding:8px 12px; background:#475569; color:white; border:none; border-radius:6px; cursor:pointer;">Aplicar</button>
+                </div>
+                <p id="couponMsg" style="font-size:12px; margin-bottom:10px; display:none;"></p>
+            </div>
+
+            <button id="btnEnter" onclick="checkAuth()"
+                style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px;">Verificar
+                Acesso</button>
+            <p id="authError" style="color:#ef4444; margin-top:10px; display:none; font-size:14px;"></p>
         </div>
     </div>
 
     <script>
+        let currentPrice = 97.00;
+        let isVorcon = false;
+
         function checkAuth() {
             const email = document.getElementById('authEmail').value.trim().toLowerCase();
-            const validDomains = ['@vorcon.com.br']; // Whitelist
+            const validDomains = ['@vorcon.com.br']; // Whitelist gratuito
+            const paymentArea = document.getElementById('paymentArea');
+            const btn = document.getElementById('btnEnter');
+            const error = document.getElementById('authError');
 
-            if (validDomains.some(d => email.endsWith(d))) {
-                document.getElementById('authOverlay').style.display = 'none';
-                localStorage.setItem('vorcon_user', email); // Persist session simple
-            } else {
-                document.getElementById('authError').style.display = 'block';
+            if (!email) {
+                error.style.display = 'block';
+                error.innerText = "Por favor, informe seu e-mail.";
+                return;
             }
+
+            // 1. Verifica se é VORCON (Acesso Direto)
+            isVorcon = validDomains.some(d => email.endsWith(d));
+
+            if (isVorcon) {
+                // Login Sucesso
+                completeLogin(email);
+            } else {
+                // 2. Se não for Vorcon, mostra fluxo de pagamento
+                if (paymentArea.style.display === 'none') {
+                    paymentArea.style.display = 'block';
+                    btn.innerText = `Pagar R$ ${currentPrice.toFixed(2).replace('.', ',')} e Entrar`;
+                    error.style.display = 'none';
+                } else {
+                    // Simulação de Pagamento
+                    if (confirm(`Simular pagamento de R$ ${currentPrice.toFixed(2).replace('.', ',')} via Asaas/Pix?`)) {
+                        completeLogin(email);
+                    }
+                }
+            }
+        }
+
+        function applyCoupon() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const msg = document.getElementById('couponMsg');
+            const priceDisplay = document.getElementById('priceDisplay');
+            const btn = document.getElementById('btnEnter');
+
+            // Lógica de Cupons
+            const coupons = {
+                'VORCON90': 0.90, // 90% off
+                'BETA50': 0.50,   // 50% off
+                'TESTE': 1.00     // 100% off (Grátis)
+            };
+
+            if (coupons[code] !== undefined) {
+                const discount = coupons[code];
+                const finalPrice = 97.00 * (1 - discount);
+                currentPrice = finalPrice;
+
+                priceDisplay.innerText = finalPrice <= 0 ? 'GRÁTIS' : `R$ ${finalPrice.toFixed(2).replace('.', ',')}`;
+                msg.innerHTML = `Cupom aplicado! Desconto de ${(discount * 100).toFixed(0)}%`;
+                msg.style.color = '#16a34a';
+                msg.style.display = 'block';
+                btn.innerText = finalPrice <= 0 ? 'Entrar (Grátis)' : `Pagar R$ ${finalPrice.toFixed(2).replace('.', ',')} e Entrar`;
+            } else {
+                msg.innerText = "Cupom inválido ou expirado.";
+                msg.style.color = '#ef4444';
+                msg.style.display = 'block';
+            }
+        }
+
+        function completeLogin(email) {
+            document.getElementById('authOverlay').style.display = 'none';
+            localStorage.setItem('vorcon_user', email);
         }
 
         // Auto-login persistence
         window.addEventListener('load', () => {
+            // Limpar para testes se necessário ou manter
             const user = localStorage.getItem('vorcon_user');
-            if (user && user.endsWith('@vorcon.com.br')) {
+            if (user) {
                 document.getElementById('authOverlay').style.display = 'none';
             }
         });
