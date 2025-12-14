@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { createPaymentBilling, handleAsaasWebhook } = require('../lib/asaas');
+const { createPaymentBilling, createAsaasCustomer, handleAsaasWebhook } = require('../lib/asaas');
 const { processReconciliation } = require('../lib/reconciliation');
 const { generateReconciliationReport } = require('../lib/pdf-generator');
 

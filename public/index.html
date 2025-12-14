@@ -473,6 +473,7 @@
             100% {
                 transform: rotate(360deg);
             }
+        }
     </style>
 </head>
 
@@ -543,7 +544,9 @@
             <div style="text-align:left; margin-top:10px; display:flex; gap:8px; align-items:start;">
                 <input type="checkbox" id="checkTerms" style="margin-top:2px;">
                 <label for="checkTerms" style="font-size:11px; color:#64748b; line-height:1.3; cursor:pointer;">
-                    Concordo com os <b>Termos de Uso</b> e <b>Política de Privacidade</b>, e autorizo o tratamento dos
+                    Concordo com os <a href="#" style="color:#2563eb; text-decoration:none;">Termos de Uso</a> e <a
+                        href="#" style="color:#2563eb; text-decoration:none;">Política de Privacidade</a>, e autorizo o
+                    tratamento dos
                     meus dados para fins de acesso ao sistema (LGPD).
                 </label>
             </div>
@@ -731,6 +734,10 @@
             }
         }
 
+        function showHelpModal() {
+            document.getElementById('helpModal').style.display = 'flex';
+        }
+
         window.addEventListener('load', () => {
             const user = localStorage.getItem('vorcon_user');
             const name = localStorage.getItem('vorcon_name') || 'Usuario';
@@ -746,6 +753,46 @@
         <div class="spinner"></div>
         <h3 style="color:var(--primary)">Vorcon Engine V10</h3>
         <p id="loaderStatus">Iniciando ciclo de conciliação...</p>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9990; justify-content:center; align-items:center;">
+        <div
+            style="background:white; padding:30px; border-radius:12px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; position:relative;">
+            <button onclick="document.getElementById('helpModal').style.display='none'"
+                style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+
+            <h2 style="color:var(--primary); margin-top:0;">Como usar o VorconMatch</h2>
+            <p style="color:#64748b; font-size:14px; line-height:1.5;">
+                Para garantir 100% de precisão na conciliação, seus arquivos Excel (.xlsx) ou CSV devem seguir um padrão
+                simples.
+            </p>
+
+            <h3 style="font-size:16px; color:#334155; margin-bottom:10px;">📋 Formato dos Arquivos</h3>
+            <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px;">
+                <p>O sistema detecta automaticamente as colunas, mas ajuda se você tiver:</p>
+                <ul style="padding-left:20px; color:#475569;">
+                    <li><b>Data:</b> Formato <code>dd/mm/aaaa</code> (Ex: 25/12/2024)</li>
+                    <li><b>Valor:</b> Números (pode ser negativo para saídas)</li>
+                    <li><b>Descrição:</b> Texto descrevendo a transação</li>
+                </ul>
+            </div>
+
+            <h3 style="font-size:16px; color:#334155; margin-top:20px; margin-bottom:10px;">🚀 Passo a Passo</h3>
+            <ol style="padding-left:20px; color:#475569; font-size:14px; line-height:1.6;">
+                <li>Clique em <b>📂 1. Banco</b> e selecione seu extrato bancário.</li>
+                <li>Clique em <b>📂 2. Financeiro</b> e selecione seu relatório do sistema.</li>
+                <li>Clique no botão azul <b>⚡ Processar</b>.</li>
+                <li>O sistema irá cruzar os dados automaticamente (M.A.R.K. 11).</li>
+                <li>Veja os resultados na tela e baixe o Relatório PDF ou Excel.</li>
+            </ol>
+
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="document.getElementById('helpModal').style.display='none'"
+                    style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold;">Entendi</button>
+            </div>
+        </div>
     </div>
 
     <header>
@@ -773,6 +820,10 @@
             <div id="lblF" style="font-size:0.75rem; margin-top:5px; font-weight:400">Nenhum arquivo</div>
             <input type="file" id="fileF" hidden accept=".csv,.xlsx">
         </div>
+
+        <button class="btn-action btn-export" onclick="showHelpModal()"
+            style="min-width:40px; width:40px; padding:0; font-size:1.2rem; border-radius:50%; border:2px solid #3b82f6; color:#3b82f6;"
+            title="Como Usar">?</button>
 
         <button class="btn-action btn-run" id="btnProcess" onclick="startCascade()" disabled>⚡ Processar</button>
         <button class="btn-action btn-export" onclick="exportData()">📥 Baixar XLSX</button>
