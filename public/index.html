@@ -477,38 +477,80 @@
 </head>
 
 <body>
-    <!-- Auth Overlay -->
+    <!-- Auth Overlay (Registration Mode) -->
     <div id="authOverlay"
-        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.98); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; overflow-y:auto; padding:20px;">
         <div
-            style="background:white; padding:40px; border-radius:12px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5); max-width:400px; width:90%;">
-            <h2 style="margin-bottom:10px; color:#1e293b;">VorconMatch <span
-                    style="font-size:0.6em; background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">BETA</span>
+            style="background:white; padding:30px; border-radius:12px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5); max-width:450px; width:100%;">
+
+            <div
+                style="background:#f59e0b; color:white; padding:5px; border-radius:6px; font-weight:bold; font-size:12px; margin-bottom:15px; letter-spacing:0.5px;">
+                ⚠️ AMBIENTE DE TESTE (SANDBOX) - PIX FICTÍCIO
+            </div>
+
+            <h2 style="margin-bottom:5px; color:#1e293b;">VorconMatch <span
+                    style="font-size:0.6em; background:#2563eb; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">BETA</span>
             </h2>
-            <p style="margin-bottom:20px; color:#64748b;">Acesso Corporativo ou Beta Tester</p>
+            <p style="margin-bottom:20px; color:#64748b; font-size:14px;">Crie seu acesso para testar a ferramenta.</p>
 
-            <input type="email" id="authEmail" placeholder="seu.email@empresa.com"
-                style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:10px; font-size:16px;">
+            <div style="text-align:left; display:flex; flex-direction:column; gap:12px;">
+                <!-- Identity -->
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:#475569;">SEU NOME</label>
+                    <input type="text" id="regName" placeholder="Ex: Luiz Viana"
+                        style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                </div>
 
-            <!-- Area de Cupom (Oculta inicialmente) -->
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:#475569;">E-MAIL CORPORATIVO</label>
+                    <input type="email" id="regEmail" placeholder="nome@empresa.com"
+                        style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                </div>
+
+                <!-- Company Info -->
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:700; color:#475569;">CPF (Pagador)</label>
+                        <input type="text" id="regCPF" placeholder="000.000.000-00" maxlength="14"
+                            style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:700; color:#475569;">CNPJ (Empresa)</label>
+                        <input type="text" id="regCNPJ" placeholder="00.000.000/0001-00" maxlength="18"
+                            style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment/Coupon Section -->
             <div id="paymentArea"
-                style="display:none; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:15px;">
-                <p style="font-size:14px; color:#475569; margin-bottom:10px;">Licença Beta: <b
-                        style="text-decoration:line-through; color:#94a3b8;">R$ 997,00</b> <span id="priceDisplay"
-                        style="color:#2563eb; font-weight:bold;">R$ 97,00</span></p>
+                style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:15px; text-align:center;">
+                <p style="font-size:14px; color:#475569; margin-bottom:10px;">
+                    Valor do Acesso: <b style="text-decoration:line-through; color:#94a3b8;">R$ 997,00</b>
+                    <span id="priceDisplay" style="color:#2563eb; font-weight:bold; font-size:18px;">R$ 97,00</span>
+                </p>
+
                 <div style="display:flex; gap:5px; margin-bottom:15px;">
                     <input type="text" id="couponCode" placeholder="CUPOM PROMOCIONAL"
-                        style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; text-transform:uppercase;">
+                        style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; text-transform:uppercase; font-size:13px;">
                     <button onclick="applyCoupon()"
-                        style="padding:8px 12px; background:#475569; color:white; border:none; border-radius:6px; cursor:pointer;">Aplicar</button>
+                        style="padding:8px 12px; background:#475569; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">Aplicar</button>
                 </div>
                 <p id="couponMsg" style="font-size:12px; margin-bottom:10px; display:none;"></p>
             </div>
 
-            <button id="btnEnter" onclick="checkAuth()"
-                style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px;">Verificar
-                Acesso</button>
-            <p id="authError" style="color:#ef4444; margin-top:10px; display:none; font-size:14px;"></p>
+            <button id="btnEnter" onclick="handleRegisterAndPay()"
+                style="width:100%; padding:15px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:10px;">
+                Gerar Acesso (Pix Sandbox)
+            </button>
+
+            <p id="authError" style="color:#ef4444; margin-top:15px; display:none; font-size:13px; line-height:1.4;">
+            </p>
+
+            <p style="font-size:11px; color:#94a3b8; margin-top:15px;">
+                * Em ambiente Sandbox, o pagamento não debita dinheiro real. Use o APP do Asaas Sandbox ou pague via
+                Internet Banking de Teste.
+            </p>
         </div>
     </div>
 
@@ -516,38 +558,99 @@
         let currentPrice = 97.00;
         let isVorcon = false;
 
-        function checkAuth() {
-            const email = document.getElementById('authEmail').value.trim().toLowerCase();
-            const validDomains = ['@vorcon.com.br']; // Whitelist gratuito
-            const paymentArea = document.getElementById('paymentArea');
+        async function handleRegisterAndPay() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const cpf = document.getElementById('regCPF').value.replace(/\D/g, '');
+            const cnpj = document.getElementById('regCNPJ').value.replace(/\D/g, '');
+
             const btn = document.getElementById('btnEnter');
             const error = document.getElementById('authError');
+            error.style.display = 'none';
 
-            if (!email) {
-                error.style.display = 'block';
-                error.innerText = "Por favor, informe seu e-mail.";
+            // Validation
+            if (!name || !email) {
+                showError("Nome e E-mail são obrigatórios.");
                 return;
             }
 
-            // 1. Verifica se é VORCON (Acesso Direto)
-            isVorcon = validDomains.some(d => email.endsWith(d));
-
-            if (isVorcon) {
-                // Login Sucesso
+            // Vorcon Direct Entry
+            if (email.endsWith('@vorcon.com.br')) {
                 completeLogin(email);
-            } else {
-                // 2. Se não for Vorcon, mostra fluxo de pagamento
-                if (paymentArea.style.display === 'none') {
-                    paymentArea.style.display = 'block';
-                    btn.innerText = `Pagar R$ ${currentPrice.toFixed(2).replace('.', ',')} e Entrar`;
-                    error.style.display = 'none';
-                } else {
-                    // Simulação de Pagamento
-                    if (confirm(`Simular pagamento de R$ ${currentPrice.toFixed(2).replace('.', ',')} via Asaas/Pix?`)) {
-                        completeLogin(email);
-                    }
+                return;
+            }
+
+            // External Users validation
+            if (currentPrice > 0) {
+                if (!cpf || cpf.length !== 11) {
+                    showError("CPF do pagador inválido (necessário 11 números).");
+                    return;
                 }
             }
+
+            // Lock UI
+            btn.disabled = true;
+            btn.innerText = "Processando Cadastro...";
+            btn.style.opacity = "0.7";
+
+            try {
+                // Determine Flow
+                if (currentPrice <= 0) {
+                    // Free Access (Coupon)
+                    setTimeout(() => completeLogin(email), 1000);
+                    return;
+                }
+
+                // Paid Flow -> Call Backend
+                btn.innerText = "Gerando Cobrança no Asaas...";
+
+                const res = await fetch('/api/billing/init-access', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, cpf, cnpj, amount: currentPrice })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Erro na API');
+
+                if (data.invoiceUrl) {
+                    const win = window.open(data.invoiceUrl, '_blank');
+
+                    // Update UI to "Waiting Payment"
+                    btn.innerText = "🔗 Fatura Aberta! Clique aqui se fechou.";
+                    btn.onclick = () => window.open(data.invoiceUrl, '_blank');
+                    btn.disabled = false;
+                    btn.style.background = "#059669"; // Green
+
+                    // Show Confirmation
+                    const userConfirmed = confirm(
+                        "✅ COBRANÇA GERADA COM SUCESSO!\n\n" +
+                        "1. Uma nova aba abriu com o PIX/Boleto (Ambiente Sandbox).\n" +
+                        "2. Realize o pagamento 'fictício' lá.\n" +
+                        "3. Clique em OK nesta mensagem APÓS pagar para entrar."
+                    );
+
+                    if (userConfirmed) {
+                        completeLogin(email);
+                    }
+                } else {
+                    throw new Error("Asaas não retornou URL da fatura.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                showError("Erro no cadastro: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Tentar Novamente";
+                btn.style.opacity = "1";
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('authError');
+            el.innerText = msg;
+            el.style.display = 'block';
         }
 
         function applyCoupon() {
@@ -556,11 +659,10 @@
             const priceDisplay = document.getElementById('priceDisplay');
             const btn = document.getElementById('btnEnter');
 
-            // Lógica de Cupons
             const coupons = {
-                'VORCON90': 0.90, // 90% off
-                'BETA50': 0.50,   // 50% off
-                'TESTE': 1.00     // 100% off (Grátis)
+                'VORCON90': 0.90,
+                'BETA50': 0.50,
+                'TESTE': 1.00
             };
 
             if (coupons[code] !== undefined) {
@@ -572,9 +674,16 @@
                 msg.innerHTML = `Cupom aplicado! Desconto de ${(discount * 100).toFixed(0)}%`;
                 msg.style.color = '#16a34a';
                 msg.style.display = 'block';
-                btn.innerText = finalPrice <= 0 ? 'Entrar (Grátis)' : `Pagar R$ ${finalPrice.toFixed(2).replace('.', ',')} e Entrar`;
+
+                if (finalPrice <= 0) {
+                    btn.innerText = "Entrar (Gratuito test)";
+                    btn.style.background = "#16a34a";
+                } else {
+                    btn.innerText = `Gerar Acesso (R$ ${finalPrice.toFixed(2).replace('.', ',')})`;
+                }
+
             } else {
-                msg.innerText = "Cupom inválido ou expirado.";
+                msg.innerText = "Cupom inválido.";
                 msg.style.color = '#ef4444';
                 msg.style.display = 'block';
             }
@@ -585,13 +694,11 @@
             localStorage.setItem('vorcon_user', email);
         }
 
-        // Auto-login persistence
         window.addEventListener('load', () => {
-            // Limpar para testes se necessário ou manter
+            // For Sandbox testing, maybe we forcing login every time?
+            // Uncomment next lines if you want persistence
             const user = localStorage.getItem('vorcon_user');
-            if (user) {
-                document.getElementById('authOverlay').style.display = 'none';
-            }
+            if (user) document.getElementById('authOverlay').style.display = 'none';
         });
     </script>
 

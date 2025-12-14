@@ -19,10 +19,10 @@ const asaasClient = axios.create({
 });
 
 // ==================== CLIENTES ====================
-async function createAsaasCustomer(userEmail, userCPF, userPhone) {
+async function createAsaasCustomer(userEmail, userCPF, userPhone, userName) {
     try {
         const response = await asaasClient.post('/customers', {
-            name: userEmail.split('@')[0],
+            name: userName || userEmail.split('@')[0],
             email: userEmail,
             cpfCnpj: userCPF,
             phone: userPhone,

@@ -90,4 +90,40 @@ router.post('/billing/create', async (req, res) => {
   }
 });
 
+// Init Access (Registration + Billing)
+router.post('/billing/init-access', async (req, res) => {
+  try {
+    const { name, email, cpf, cnpj, amount } = req.body;
+
+    // 1. Create or Get Customer with Full Details
+    // Use CNPJ if available for the customer record, or CPF
+    const mainDoc = cnpj || cpf || '00000000000';
+
+    const customer = await createAsaasCustomer(
+      email,
+      mainDoc,
+      '11999999999', // Mock phone
+      name // Pass Name
+    );
+
+    // Update customer name if possible (Asaas API dependent, but create handles it)
+    // We note that 'createAsaasCustomer' in asaas.js currently splits email for name. 
+    // We should probably update that too, but for now passing the data is step 1.
+    // Ideally we would update the createAsaasCustomer signature to accept name.
+
+    // 2. Create Billing
+    const billing = await createPaymentBilling(
+      customer.id,
+      'BETA_ACCESS',
+      amount,
+      'PIX'
+    );
+
+    res.json(billing);
+  } catch (error) {
+    console.error("Billing Init Error:", error);
+    res.status(500).json({ error: error.message || 'Falha ao gerar cobrança' });
+  }
+});
+
 module.exports = router;
