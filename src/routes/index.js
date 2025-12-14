@@ -93,7 +93,7 @@ router.post('/billing/create', async (req, res) => {
 // Init Access (Registration + Billing)
 router.post('/billing/init-access', async (req, res) => {
   try {
-    const { name, email, cpf, cnpj, amount } = req.body;
+    const { name, email, cpf, cnpj, amount, phone, cep, address, addressNumber } = req.body;
 
     // 1. Create or Get Customer with Full Details
     // Use CNPJ if available for the customer record, or CPF
@@ -102,8 +102,9 @@ router.post('/billing/init-access', async (req, res) => {
     const customer = await createAsaasCustomer(
       email,
       mainDoc,
-      '11999999999', // Mock phone
-      name // Pass Name
+      phone || '11999999999',
+      name,
+      { postalCode: cep, address, addressNumber }
     );
 
     // Update customer name if possible (Asaas API dependent, but create handles it)

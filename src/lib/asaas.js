@@ -19,15 +19,22 @@ const asaasClient = axios.create({
 });
 
 // ==================== CLIENTES ====================
-async function createAsaasCustomer(userEmail, userCPF, userPhone, userName) {
+async function createAsaasCustomer(userEmail, userCPF, userPhone, userName, addressObj = {}) {
     try {
-        const response = await asaasClient.post('/customers', {
+        const payload = {
             name: userName || userEmail.split('@')[0],
             email: userEmail,
             cpfCnpj: userCPF,
             phone: userPhone,
-            notificationDisabled: false
-        });
+            mobilePhone: userPhone,
+            notificationDisabled: false,
+            postalCode: addressObj.postalCode || '',
+            address: addressObj.address || '',
+            addressNumber: addressObj.addressNumber || '',
+            province: '' // Bairro currently not asked, can be optional
+        };
+
+        const response = await asaasClient.post('/customers', payload);
 
         return response.data;
     } catch (error) {

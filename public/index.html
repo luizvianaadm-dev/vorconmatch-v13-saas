@@ -521,6 +521,31 @@
                             style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
                     </div>
                 </div>
+
+                <!-- Contact & Address -->
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:#475569;">CELULAR</label>
+                    <input type="text" id="regPhone" placeholder="(11) 99999-9999" maxlength="15"
+                        style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:700; color:#475569;">CEP</label>
+                        <input type="text" id="regCEP" placeholder="00000-000" maxlength="9"
+                            style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:700; color:#475569;">NÚMERO</label>
+                        <input type="text" id="regNumber" placeholder="Ex: 123"
+                            style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; color:#475569;">ENDEREÇO (RUA/AV)</label>
+                    <input type="text" id="regAddress" placeholder="Ex: Av. Paulista"
+                        style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; box-sizing:border-box;">
+                </div>
             </div>
 
             <!-- Payment/Coupon Section -->
@@ -642,6 +667,10 @@
             const email = document.getElementById('regEmail').value.trim().toLowerCase();
             const cpf = document.getElementById('regCPF').value.replace(/\D/g, '');
             const cnpj = document.getElementById('regCNPJ').value.replace(/\D/g, '');
+            const phone = document.getElementById('regPhone').value.replace(/\D/g, '');
+            const cep = document.getElementById('regCEP').value.replace(/\D/g, '');
+            const address = document.getElementById('regAddress').value.trim();
+            const addressNumber = document.getElementById('regNumber').value.trim();
             const checkTerms = document.getElementById('checkTerms');
 
             const btn = document.getElementById('btnEnter');
@@ -651,6 +680,18 @@
             // Validation
             if (!name || !email) {
                 showError("Nome e E-mail são obrigatórios.");
+                return;
+            }
+            if (!phone || phone.length < 10) {
+                showError("Celular inválido.");
+                return;
+            }
+            if (!cep || cep.length !== 8) {
+                showError("CEP inválido.");
+                return;
+            }
+            if (!address || !addressNumber) {
+                showError("Endereço e Número são obrigatórios.");
                 return;
             }
 
@@ -682,6 +723,7 @@
                 // Determine Flow
                 if (currentPrice <= 0) {
                     // Free Access (Coupon)
+                    // Still send data to backend to create customer? Ideally yes, but for now just access
                     setTimeout(() => completeLogin(email, name), 1000);
                     return;
                 }
@@ -692,7 +734,10 @@
                 const res = await fetch('/api/billing/init-access', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, cpf, cnpj, amount: currentPrice })
+                    body: JSON.stringify({
+                        name, email, cpf, cnpj, amount: currentPrice,
+                        phone, cep, address, addressNumber
+                    })
                 });
 
                 const data = await res.json();
@@ -838,12 +883,26 @@
 
             <h3 style="font-size:16px; color:#334155; margin-bottom:10px;">📋 Formato dos Arquivos</h3>
             <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px;">
-                <p>O sistema detecta automaticamente as colunas, mas ajuda se você tiver:</p>
-                <ul style="padding-left:20px; color:#475569;">
-                    <li><b>Data:</b> Formato <code>dd/mm/aaaa</code> (Ex: 25/12/2024)</li>
-                    <li><b>Valor:</b> Números (pode ser negativo para saídas)</li>
-                    <li><b>Descrição:</b> Texto descrevendo a transação</li>
+                <p>O sistema tenta ler qualquer planilha, mas estes campos são essenciais:</p>
+
+                <h4 style="margin:10px 0 5px; color:#0f172a;">Obrigatórios (Para o Cálculo):</h4>
+                <ul style="padding-left:20px; color:#475569; margin-top:0;">
+                    <li style="margin-bottom:5px;"><b>Data:</b> dd/mm/aaaa (Ex: 25/12/2024) - Essencial para cruzar o
+                        dia.</li>
+                    <li style="margin-bottom:5px;"><b>Valor:</b> Números (Positivo ou Negativo) - Essencial para bater
+                        os valores (Subset Sum).</li>
                 </ul>
+
+                <h4 style="margin:10px 0 5px; color:#0f172a;">Recomendados (Para Organização):</h4>
+                <ul style="padding-left:20px; color:#475569; margin-top:0;">
+                    <li style="margin-bottom:5px;"><b>Banco / Caixa:</b> (Texto) O sistema usa isso para não misturar
+                        pagamentos do Itaú com o Bradesco, por exemplo. Se não tiver, ele trata tudo como "Genérico".
+                    </li>
+                    <li style="margin-bottom:5px;"><b>Descrição:</b> (Texto) Ajuda você a ler o relatório depois.</li>
+                </ul>
+
+                <p style="font-size:11px; color:#94a3b8; margin-top:10px;">* As colunas podem ter qualquer nome (ex:
+                    "Dia", "Vl.", "Histórico"). O M.A.R.K. 11 entende sinônimos.</p>
             </div>
 
             <h3 style="font-size:16px; color:#334155; margin-top:20px; margin-bottom:10px;">🚀 Passo a Passo</h3>
@@ -876,6 +935,13 @@
                     bancária.</p>
                 <p><b>3. Responsabilidade</b><br>O usuário é responsável pela conferência final dos dados.</p>
                 <p><b>4. Pagamento</b><br>O acesso é liberado mediante confirmação de pagamento via Asaas ou Cupom.</p>
+
+                <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+                <p style="font-size:11px; color:#94a3b8;">
+                    <b>VORCON CONSULTORES ASSOCIADOS LTDA "VORCON TECH"</b><br>
+                    CNPJ: 52.806.620/0001-16<br>
+                    Email: contato@vorcon.com.br
+                </p>
             </div>
             <div style="margin-top:20px; text-align:right;">
                 <button onclick="document.getElementById('termsModal').style.display='none'"
@@ -899,6 +965,13 @@
                 <p><b>3. Compartilhamento</b><br>Seus dados são compartilhados apenas com o gateway de pagamento
                     (Asaas).</p>
                 <p><b>4. Seus Direitos</b><br>Você pode solicitar exclusão dos dados entrando em contato com o suporte.
+                </p>
+
+                <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+                <p style="font-size:11px; color:#94a3b8;">
+                    <b>VORCON CONSULTORES ASSOCIADOS LTDA "VORCON TECH"</b><br>
+                    CNPJ: 52.806.620/0001-16<br>
+                    Email: contato@vorcon.com.br
                 </p>
             </div>
             <div style="margin-top:20px; text-align:right;">
@@ -935,7 +1008,7 @@
         </div>
 
         <button class="btn-action btn-export" onclick="showHelpModal()"
-            style="min-width:40px; width:40px; padding:0; font-size:1.2rem; border-radius:50%; border:2px solid #3b82f6; color:#3b82f6;"
+            style="min-width:32px; width:32px; height:32px; padding:0; font-size:1rem; border-radius:50%; border:2px solid #3b82f6; color:#3b82f6; display:flex; align-items:center; justify-content:center; background:white;"
             title="Como Usar">?</button>
 
         <button class="btn-action btn-run" id="btnProcess" onclick="startCascade()" disabled>⚡ Processar</button>
