@@ -544,8 +544,11 @@
             <div style="text-align:left; margin-top:10px; display:flex; gap:8px; align-items:start;">
                 <input type="checkbox" id="checkTerms" style="margin-top:2px;">
                 <label for="checkTerms" style="font-size:11px; color:#64748b; line-height:1.3; cursor:pointer;">
-                    Concordo com os <a href="#" style="color:#2563eb; text-decoration:none;">Termos de Uso</a> e <a
-                        href="#" style="color:#2563eb; text-decoration:none;">Política de Privacidade</a>, e autorizo o
+                    Concordo com os <a href="#"
+                        onclick="event.preventDefault(); document.getElementById('termsModal').style.display='flex'"
+                        style="color:#2563eb; text-decoration:none;">Termos de Uso</a> e <a href="#"
+                        onclick="event.preventDefault(); document.getElementById('privacyModal').style.display='flex'"
+                        style="color:#2563eb; text-decoration:none;">Política de Privacidade</a>, e autorizo o
                     tratamento dos
                     meus dados para fins de acesso ao sistema (LGPD).
                 </label>
@@ -569,6 +572,70 @@
     <script>
         let currentPrice = 97.00;
         let isVorcon = false;
+        let authMode = 'register'; // 'register' or 'login'
+
+        function switchMode(mode) {
+            authMode = mode;
+            const tabReg = document.getElementById('tabRegister');
+            const tabLog = document.getElementById('tabLogin');
+            const fieldsReg = document.getElementById('fieldsRegister');
+            const fieldsLog = document.getElementById('fieldsLogin');
+            const payArea = document.getElementById('paymentArea');
+            const termsArea = document.getElementById('termsArea');
+            const btn = document.getElementById('btnEnter');
+
+            if (mode === 'register') {
+                tabReg.style.color = '#2563eb'; tabReg.style.borderBottom = '2px solid #2563eb';
+                tabLog.style.color = '#64748b'; tabLog.style.borderBottom = 'none';
+                fieldsReg.style.display = 'flex';
+                fieldsLog.style.display = 'none';
+                payArea.style.display = 'block';
+                termsArea.style.display = 'flex';
+                btn.innerText = "Gerar Acesso (Pix Sandbox)";
+            } else {
+                tabLog.style.color = '#2563eb'; tabLog.style.borderBottom = '2px solid #2563eb';
+                tabReg.style.color = '#64748b'; tabReg.style.borderBottom = 'none';
+                fieldsReg.style.display = 'none';
+                fieldsLog.style.display = 'flex';
+                payArea.style.display = 'none';
+                termsArea.style.display = 'none';
+                btn.innerText = "Entrar no Sistema";
+            }
+        }
+
+        async function handleAuthAction() {
+            if (authMode === 'register') {
+                await handleRegisterAndPay();
+            } else {
+                await handleLogin();
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const btn = document.getElementById('btnEnter');
+
+            if (!email) {
+                showError("Digite seu e-mail.");
+                return;
+            }
+
+            // Simple Login Simulation (In prod: Check DB/Asaas)
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // For now, we allow any valid email format to enter if they claim they have account
+                // Or we could call backend to check if customer exists
+                if (email.includes('@')) {
+                    completeLogin(email);
+                } else {
+                    showError("E-mail inválido.");
+                    btn.disabled = false;
+                    btn.innerText = "Entrar no Sistema";
+                }
+            }, 1000);
+        }
 
         async function handleRegisterAndPay() {
             const name = document.getElementById('regName').value.trim();
@@ -791,6 +858,52 @@
             <div style="margin-top:20px; text-align:right;">
                 <button onclick="document.getElementById('helpModal').style.display='none'"
                     style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold;">Entendi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="termsModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9995; justify-content:center; align-items:center;">
+        <div
+            style="background:white; padding:30px; border-radius:12px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;">
+            <button onclick="document.getElementById('termsModal').style.display='none'"
+                style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            <h2 style="color:var(--primary); margin-top:0;">Termos de Uso</h2>
+            <div style="font-size:13px; color:#475569; line-height:1.6;">
+                <p><b>1. Aceite</b><br>Ao utilizar o VorconMatch, você concorda com estes termos.</p>
+                <p><b>2. Uso da Ferramenta</b><br>O sistema é fornecido "como está" (as-is) para fins de conciliação
+                    bancária.</p>
+                <p><b>3. Responsabilidade</b><br>O usuário é responsável pela conferência final dos dados.</p>
+                <p><b>4. Pagamento</b><br>O acesso é liberado mediante confirmação de pagamento via Asaas ou Cupom.</p>
+            </div>
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="document.getElementById('termsModal').style.display='none'"
+                    style="background:#e2e8f0; color:#334155; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div id="privacyModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9995; justify-content:center; align-items:center;">
+        <div
+            style="background:white; padding:30px; border-radius:12px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;">
+            <button onclick="document.getElementById('privacyModal').style.display='none'"
+                style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            <h2 style="color:var(--primary); margin-top:0;">Política de Privacidade (LGPD)</h2>
+            <div style="font-size:13px; color:#475569; line-height:1.6;">
+                <p><b>1. Coleta de Dados</b><br>Coletamos Nome, Email, CPF e CNPJ para fins de faturamento e
+                    identificação.</p>
+                <p><b>2. Tratamento</b><br>Os dados são processados para gerar cobranças (Asaas) e controlar acesso.</p>
+                <p><b>3. Compartilhamento</b><br>Seus dados são compartilhados apenas com o gateway de pagamento
+                    (Asaas).</p>
+                <p><b>4. Seus Direitos</b><br>Você pode solicitar exclusão dos dados entrando em contato com o suporte.
+                </p>
+            </div>
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="document.getElementById('privacyModal').style.display='none'"
+                    style="background:#e2e8f0; color:#334155; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Entendi</button>
             </div>
         </div>
     </div>
