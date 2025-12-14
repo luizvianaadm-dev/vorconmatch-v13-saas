@@ -31,8 +31,23 @@ async function createAsaasCustomer(userEmail, userCPF, userPhone, userName) {
 
         return response.data;
     } catch (error) {
-        console.error('❌ Erro ao criar cliente Asaas:', error.response?.data || error.message);
-        throw new Error('Falha ao criar cliente de pagamento');
+        // Handle "Customer already exists" error
+        const errData = error.response?.data;
+        if (errData?.errors?.some(e => e.code === 'INVALID_CUSTOMER' || e.description.includes('email'))) {
+            // Try to find existing customer
+            console.log(`⚠️ Cliente já existe (${userEmail}), buscando...`);
+            try {
+                const search = await asaasClient.get(`/customers?email=${userEmail}`);
+                if (search.data.data && search.data.data.length > 0) {
+                    return search.data.data[0];
+                }
+            } catch (searchErr) {
+                console.error("Erro ao buscar cliente existente:", searchErr.message);
+            }
+        }
+
+        console.error('❌ Erro ao criar cliente Asaas:', errData || error.message);
+        throw new Error('Falha ao criar cliente de pagamento (Verifique se o email é válido)');
     }
 }
 

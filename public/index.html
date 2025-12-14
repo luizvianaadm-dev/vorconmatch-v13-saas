@@ -539,8 +539,17 @@
                 <p id="couponMsg" style="font-size:12px; margin-bottom:10px; display:none;"></p>
             </div>
 
+            <!-- LGPD / Terms Checkbox -->
+            <div style="text-align:left; margin-top:10px; display:flex; gap:8px; align-items:start;">
+                <input type="checkbox" id="checkTerms" style="margin-top:2px;">
+                <label for="checkTerms" style="font-size:11px; color:#64748b; line-height:1.3; cursor:pointer;">
+                    Concordo com os <b>Termos de Uso</b> e <b>Política de Privacidade</b>, e autorizo o tratamento dos
+                    meus dados para fins de acesso ao sistema (LGPD).
+                </label>
+            </div>
+
             <button id="btnEnter" onclick="handleRegisterAndPay()"
-                style="width:100%; padding:15px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:10px;">
+                style="width:100%; padding:15px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:15px;">
                 Gerar Acesso (Pix Sandbox)
             </button>
 
@@ -563,6 +572,7 @@
             const email = document.getElementById('regEmail').value.trim().toLowerCase();
             const cpf = document.getElementById('regCPF').value.replace(/\D/g, '');
             const cnpj = document.getElementById('regCNPJ').value.replace(/\D/g, '');
+            const checkTerms = document.getElementById('checkTerms');
 
             const btn = document.getElementById('btnEnter');
             const error = document.getElementById('authError');
@@ -574,9 +584,14 @@
                 return;
             }
 
+            if (!checkTerms.checked) {
+                showError("Você precisa aceitar os Termos e Política de Privacidade para prosseguir.");
+                return;
+            }
+
             // Vorcon Direct Entry
             if (email.endsWith('@vorcon.com.br')) {
-                completeLogin(email);
+                completeLogin(email, name);
                 return;
             }
 
@@ -597,7 +612,7 @@
                 // Determine Flow
                 if (currentPrice <= 0) {
                     // Free Access (Coupon)
-                    setTimeout(() => completeLogin(email), 1000);
+                    setTimeout(() => completeLogin(email, name), 1000);
                     return;
                 }
 
@@ -632,7 +647,7 @@
                     );
 
                     if (userConfirmed) {
-                        completeLogin(email);
+                        completeLogin(email, name);
                     }
                 } else {
                     throw new Error("Asaas não retornou URL da fatura.");
@@ -689,16 +704,41 @@
             }
         }
 
-        function completeLogin(email) {
+        function completeLogin(email, name = '') {
+            if (!name) name = email.split('@')[0];
+
             document.getElementById('authOverlay').style.display = 'none';
             localStorage.setItem('vorcon_user', email);
+            localStorage.setItem('vorcon_name', name);
+
+            updateUserDisplay(name);
+        }
+
+        function updateUserDisplay(name) {
+            const userArea = document.getElementById('userArea');
+            const nameDisplay = document.getElementById('userNameDisplay');
+            if (userArea && nameDisplay) {
+                nameDisplay.innerText = name;
+                userArea.style.display = 'block';
+            }
+        }
+
+        function doLogout() {
+            if (confirm('Deseja realmente sair?')) {
+                localStorage.removeItem('vorcon_user');
+                localStorage.removeItem('vorcon_name');
+                location.reload();
+            }
         }
 
         window.addEventListener('load', () => {
-            // For Sandbox testing, maybe we forcing login every time?
-            // Uncomment next lines if you want persistence
             const user = localStorage.getItem('vorcon_user');
-            if (user) document.getElementById('authOverlay').style.display = 'none';
+            const name = localStorage.getItem('vorcon_name') || 'Usuario';
+
+            if (user) {
+                document.getElementById('authOverlay').style.display = 'none';
+                updateUserDisplay(name);
+            }
         });
     </script>
 
@@ -713,6 +753,10 @@
             <h1>Vorcon<span style="color:var(--secondary)">Match</span></h1>
         </div>
         <div class="right-brand">
+            <div id="userArea" style="display:none; font-size:12px; margin-bottom:5px; color:#cbd5e1;">
+                Olá, <b id="userNameDisplay" style="color:white">--</b> |
+                <a href="#" onclick="doLogout()" style="color:#94a3b8; text-decoration:none;">Sair</a>
+            </div>
             <h1>M.A.R.K. 11</h1>
             <span>Matrix of Automated Results &amp; Knowledge</span>
         </div>
